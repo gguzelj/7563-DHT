@@ -3,7 +3,6 @@ package org.fiuba.d2.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -26,7 +25,7 @@ public class HashGenerator {
             mDigest = MessageDigest.getInstance("SHA1");
             return mDigest.digest(bytes);
         } catch (NoSuchAlgorithmException e) {
-            LOG.error("Unexpected error occurred while hashing {}",bytes, e);
+            LOG.error("Unexpected error occurred while hashing {}", bytes, e);
             return null;
         }
     }
