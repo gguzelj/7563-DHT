@@ -1,4 +1,4 @@
-package org.fiuba.d2.persistence;
+package org.fiuba.d2.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

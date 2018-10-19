@@ -2,13 +2,23 @@ package org.fiuba.d2.model;
 
 import org.fiuba.d2.utils.HashGenerator;
 
+import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Random;
 
+@Entity
 public class Token implements Comparable<Token> {
 
-    private final BigInteger value;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Integer id;
+
+    @Lob
+    private BigInteger value;
+
+    private Token() {
+    }
 
     public Token(BigInteger value) {
         this.value = value;
