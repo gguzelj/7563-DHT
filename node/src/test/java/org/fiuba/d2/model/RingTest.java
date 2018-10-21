@@ -1,5 +1,9 @@
 package org.fiuba.d2.model;
 
+import org.fiuba.d2.model.node.Node;
+import org.fiuba.d2.model.node.Token;
+import org.fiuba.d2.model.ring.Ring;
+import org.fiuba.d2.model.ring.RingImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -7,7 +11,8 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fiuba.d2.model.Token.TokenBuilder.withValue;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.withValue;
+import static org.mockito.Mockito.when;
 
 public class RingTest {
 
@@ -16,7 +21,9 @@ public class RingTest {
         Node node1 = Mockito.mock(Node.class);
         Node node2 = Mockito.mock(Node.class);
 
-        Ring ring = new Ring(node1, createTokens(1, 10));
+        when(node1.getTokens()).thenReturn(createTokens(1, 10));
+
+        Ring ring =new RingImpl(node1);
         ring.addNode(node2, createTokens(5, 15));
 
         Assert.assertEquals(node2, ring.getCoordinatorNode(withValue(2)));
@@ -34,7 +41,9 @@ public class RingTest {
         Node node2 = Mockito.mock(Node.class);
         Node node3 = Mockito.mock(Node.class);
 
-        Ring ring = new Ring(node1, createTokens(10));
+        when(node1.getTokens()).thenReturn(createTokens(10));
+
+        Ring ring = new RingImpl(node1);
         ring.addNode(node2, createTokens(20));
         ring.addNode(node3, createTokens(30));
 
@@ -50,7 +59,9 @@ public class RingTest {
         Node node2 = Mockito.mock(Node.class);
         Node node3 = Mockito.mock(Node.class);
 
-        Ring ring = new Ring(node1, createTokens(10));
+        when(node1.getTokens()).thenReturn(createTokens(10));
+
+        Ring ring = new RingImpl(node1);
         ring.addNode(node2, createTokens(20));
         ring.addNode(node3, createTokens(30));
 
@@ -65,7 +76,9 @@ public class RingTest {
         Node node2 = Mockito.mock(Node.class);
         Node node3 = Mockito.mock(Node.class);
 
-        Ring ring = new Ring(node1, createTokens(10));
+        when(node1.getTokens()).thenReturn(createTokens(10));
+
+        Ring ring = new RingImpl(node1);
         ring.addNode(node2, createTokens(20));
         ring.addNode(node3, createTokens(30));
 

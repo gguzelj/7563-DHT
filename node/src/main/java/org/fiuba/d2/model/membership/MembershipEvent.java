@@ -1,9 +1,9 @@
 package org.fiuba.d2.model.membership;
 
-import org.fiuba.d2.model.Token;
+import org.fiuba.d2.model.node.Node;
+import org.fiuba.d2.model.node.NodeImpl;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 public class MembershipEvent implements Comparable<MembershipEvent> {
@@ -13,19 +13,17 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
     private Integer id;
     private Long timestamp;
     private MembershipEventType type;
-    private String uri;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
-    private List<Token> tokens;
+    @OneToOne(cascade = CascadeType.ALL)
+    private NodeImpl node;
 
     private MembershipEvent() {
     }
 
-    public MembershipEvent(Long timestamp, MembershipEventType type, String uri, List<Token> tokens) {
+    public MembershipEvent(Long timestamp, MembershipEventType type, NodeImpl node) {
         this.timestamp = timestamp;
         this.type = type;
-        this.uri = uri;
-        this.tokens = tokens;
+        this.node = node;
     }
 
     public Long getTimestamp() {
@@ -44,20 +42,12 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
         this.type = type;
     }
 
-    public String getUri() {
-        return uri;
+    public Node getNode() {
+        return node;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public List<Token> getTokens() {
-        return tokens;
-    }
-
-    public void setTokens(List<Token> tokens) {
-        this.tokens = tokens;
+    public void setNode(NodeImpl node) {
+        this.node = node;
     }
 
     @Override

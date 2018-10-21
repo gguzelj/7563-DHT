@@ -1,4 +1,7 @@
-package org.fiuba.d2.model;
+package org.fiuba.d2.model.ring;
+
+import org.fiuba.d2.model.node.Token;
+import org.fiuba.d2.model.node.Node;
 
 public class Range {
 

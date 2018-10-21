@@ -1,25 +1,30 @@
-package org.fiuba.d2.model;
+package org.fiuba.d2.model.ring;
+
+import org.fiuba.d2.model.node.Token;
+import org.fiuba.d2.model.node.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.fiuba.d2.model.Token.TokenBuilder.createMaximum;
-import static org.fiuba.d2.model.Token.TokenBuilder.createMinimum;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.createMaximum;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.createMinimum;
 
-public class Ring {
+public class RingImpl implements Ring {
 
     private List<Range> ranges;
 
-    public Ring(Node node, List<Token> tokens) {
+    public RingImpl(Node node) {
         this.ranges = new ArrayList<>();
-        initializeRing(node, tokens.stream().sorted().collect(toList()));
+        initializeRing(node, node.getTokens().stream().sorted().collect(toList()));
     }
 
+    @Override
     public void addNode(Node node, List<Token> tokens) {
          tokens.stream().sorted().forEach(token -> addNode(node, token));
     }
 
+    @Override
     public void removeNode(Node node) {
         List<Range> collect = ranges.stream()
                 .filter(range -> !range.getNode().equals(node))
@@ -38,6 +43,7 @@ public class Ring {
         ranges = newRing;
     }
 
+    @Override
     public Node getCoordinatorNode(Token token) {
         return ranges.stream()
                 .filter(range -> range.contains(token))

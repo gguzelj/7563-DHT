@@ -1,13 +1,13 @@
 package org.fiuba.d2.model;
 
-import org.junit.Assert;
+import org.fiuba.d2.model.node.Token;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.fiuba.d2.model.Token.TokenBuilder.withValue;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.withValue;
 import static org.junit.Assert.assertEquals;
 
 public class TokenTest {

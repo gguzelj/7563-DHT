@@ -1,4 +1,4 @@
-package org.fiuba.d2.model;
+package org.fiuba.d2.model.node;
 
 import org.fiuba.d2.dto.Request;
 import org.fiuba.d2.dto.RequestType;
@@ -6,26 +6,24 @@ import org.fiuba.d2.dto.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.InetAddress;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 import java.util.List;
 
-public class RemoteNode implements Node {
+@Entity
+@DiscriminatorValue("REMOTE")
+public class RemoteNode extends NodeImpl {
 
-    private NodeStatus status = NodeStatus.AVAILABLE;
+    @Transient
     private RestTemplate restTemplate;
 
-    public RemoteNode(RestTemplate restTemplate) {
+    private RemoteNode() {
+    }
+
+    public RemoteNode(String name, String uri, NodeStatus status, List<Token> tokens, RestTemplate restTemplate) {
+        super(name, uri, status, tokens);
         this.restTemplate = restTemplate;
-    }
-
-    @Override
-    public NodeStatus getStatus() {
-        return status;
-    }
-
-    @Override
-    public List<Token> getTokens() {
-        return null;
     }
 
     @Override

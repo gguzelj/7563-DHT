@@ -1,4 +1,4 @@
-package org.fiuba.d2.model;
+package org.fiuba.d2.model.node;
 
 import org.fiuba.d2.utils.HashGenerator;
 
@@ -70,6 +70,10 @@ public class Token implements Comparable<Token> {
 
         public static Token withValue(int integer) {
             return new Token(BigInteger.valueOf(integer).abs());
+        }
+
+        public static Token withValue(byte[] bytes) {
+            return new Token(new BigInteger(1, bytes));
         }
 
     }

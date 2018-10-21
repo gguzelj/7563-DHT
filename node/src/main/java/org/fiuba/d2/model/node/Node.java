@@ -1,4 +1,4 @@
-package org.fiuba.d2.model;
+package org.fiuba.d2.model.node;
 
 import java.util.List;
 

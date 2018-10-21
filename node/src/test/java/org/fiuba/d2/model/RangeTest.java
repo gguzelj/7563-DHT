@@ -1,11 +1,13 @@
 package org.fiuba.d2.model;
 
+import org.fiuba.d2.model.node.Token;
+import org.fiuba.d2.model.ring.Range;
 import org.junit.Test;
 
 import java.math.BigInteger;
 
-import static org.fiuba.d2.model.Token.TokenBuilder.createMaximum;
-import static org.fiuba.d2.model.Token.TokenBuilder.createRandom;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.createMaximum;
+import static org.fiuba.d2.model.node.Token.TokenBuilder.createRandom;
 import static org.junit.Assert.assertTrue;
 
 public class RangeTest {

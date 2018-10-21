@@ -14,6 +14,10 @@ public class Item {
     private Item() {
     }
 
+    public Item(String key, String value) {
+        this(null, key, value);
+    }
+
     public Item(String id, String key, String value) {
         this.id = id;
         this.key = key;
