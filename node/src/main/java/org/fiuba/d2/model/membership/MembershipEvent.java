@@ -1,54 +1,69 @@
 package org.fiuba.d2.model.membership;
 
-import org.fiuba.d2.model.node.Node;
-import org.fiuba.d2.model.node.NodeImpl;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.fiuba.d2.model.node.Token;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
+
+import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.isNull;
 
 @Entity
 public class MembershipEvent implements Comparable<MembershipEvent> {
 
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
     private Long timestamp;
     private MembershipEventType type;
+    private String nodeId;
+    private String name;
+    private String uri;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private NodeImpl node;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Token> tokens;
 
     private MembershipEvent() {
     }
 
-    public MembershipEvent(Long timestamp, MembershipEventType type, NodeImpl node) {
-        this.timestamp = timestamp;
+    public MembershipEvent(Long timestamp, MembershipEventType type, String nodeId, String name, String uri, List<Token> tokens) {
+        this.timestamp = isNull(timestamp) ? currentTimeMillis() : timestamp;
         this.type = type;
-        this.node = node;
+        this.nodeId = nodeId;
+        this.name = name;
+        this.uri = uri;
+        this.tokens = tokens;
+    }
+
+    public Integer getId() {
+        return id;
     }
 
     public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public MembershipEventType getType() {
         return type;
     }
 
-    public void setType(MembershipEventType type) {
-        this.type = type;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public Node getNode() {
-        return node;
+    public String getName() {
+        return name;
     }
 
-    public void setNode(NodeImpl node) {
-        this.node = node;
+    public String getUri() {
+        return uri;
+    }
+
+    public List<Token> getTokens() {
+        return tokens;
     }
 
     @Override
@@ -64,11 +79,11 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
         MembershipEvent that = (MembershipEvent) o;
         return Objects.equals(timestamp, that.timestamp) &&
                 type == that.type &&
-                Objects.equals(node, that.node);
+                Objects.equals(nodeId, that.nodeId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, type, node);
+        return Objects.hash(timestamp, type, nodeId);
     }
 }

@@ -9,12 +9,9 @@ import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Random;
 
-@Entity
+@Embeddable
 public class Token implements Comparable<Token> {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
     private String value;
 
     private Token() {

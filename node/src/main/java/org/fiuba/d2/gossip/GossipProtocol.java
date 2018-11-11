@@ -27,11 +27,10 @@ public class GossipProtocol {
         this.restTemplate = restTemplate;
     }
 
-    //@Scheduled(fixedRate = 1000, fixedDelay = 2000)
+    @Scheduled(fixedRate = 1000, fixedDelay = 2000)
     public void checkForNewEvents() {
         List<Node> nodes = ring.getNodes();
         Node node = nodes.get(new Random().nextInt(nodes.size()));
-        node.getStatus();
 
         ResponseEntity<NodeInfo> response = restTemplate.getForEntity(node.getUri(), NodeInfo.class);
 

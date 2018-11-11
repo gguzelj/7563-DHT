@@ -12,18 +12,12 @@ import static java.util.Objects.nonNull;
 import static org.fiuba.d2.utils.HashGenerator.sha1;
 import static org.fiuba.d2.utils.StringUtils.getHexString;
 
-@Entity
-@DiscriminatorValue("LOCAL")
 public class LocalNode extends NodeImpl {
 
-    @Transient
     private ItemRepository repository;
 
-    private LocalNode() {
-    }
-
-    public LocalNode(String name, String uri, List<Token> tokens, ItemRepository repository) {
-        super(name, uri, NodeStatus.AVAILABLE, tokens);
+    public LocalNode(String id, String name, String uri, List<Token> tokens, ItemRepository repository) {
+        super(id, name, uri, tokens);
         this.repository = repository;
     }
 
@@ -38,8 +32,4 @@ public class LocalNode extends NodeImpl {
         return nonNull(one) ? one.getValue() : null;
     }
 
-    @Override
-    public NodeInfo getInfo() {
-        return new NodeInfo(id, name, status, tokens);
-    }
 }

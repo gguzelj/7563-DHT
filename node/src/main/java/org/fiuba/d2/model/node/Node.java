@@ -8,8 +8,6 @@ public interface Node {
 
     String getName();
 
-    NodeStatus getStatus();
-
     List<Token> getTokens();
 
     void put(String key, String value);
@@ -17,6 +15,4 @@ public interface Node {
     String get(String key);
 
     String getUri();
-
-    NodeInfo getInfo();
 }
