@@ -13,9 +13,11 @@ import static org.fiuba.d2.model.node.Token.TokenBuilder.createMinimum;
 public class RingImpl implements Ring {
 
     private List<Range> ranges;
+    private Node localNode;
 
     public RingImpl(Node node) {
         this.ranges = new ArrayList<>();
+        this.localNode = node;
         initializeRing(node, node.getTokens().stream().sorted().collect(toList()));
     }
 
@@ -26,21 +28,21 @@ public class RingImpl implements Ring {
 
     @Override
     public void removeNode(Node node) {
-        List<Range> collect = ranges.stream()
+        List<Range> ranges = this.ranges.stream()
                 .filter(range -> !range.getNode().equals(node))
                 .collect(toList());
         List<Range> newRing = new ArrayList<>();
         Token prev = createMinimum();
         Token next;
-        for (int i = 0; i < collect.size(); i++) {
-            next = collect.get(i).getTo();
-            newRing.add(new Range(prev, next, collect.get(i).getNode()));
+        for (Range range : ranges) {
+            next = range.getTo();
+            newRing.add(new Range(prev, next, range.getNode()));
             prev = next;
         }
         Range lastRange = newRing.get(newRing.size() - 1);
         newRing.remove(newRing.size() - 1);
         newRing.add(new Range(lastRange.getFrom(), createMaximum(), lastRange.getNode()));
-        ranges = newRing;
+        this.ranges = newRing;
     }
 
     @Override
@@ -50,6 +52,16 @@ public class RingImpl implements Ring {
                 .findFirst()
                 .map(Range::getNode)
                 .orElse(null);
+    }
+
+    @Override
+    public List<Node> getNodes() {
+        return ranges.stream().map(Range::getNode).distinct().collect(toList());
+    }
+
+    @Override
+    public Node getLocalNode() {
+        return localNode;
     }
 
     private void initializeRing(Node node, List<Token> tokens) {

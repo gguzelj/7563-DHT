@@ -33,12 +33,6 @@
 
         <dependency>
             <groupId>org.fiuba.d2</groupId>
-            <artifactId>persistence</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.fiuba.d2</groupId>
             <artifactId>dto</artifactId>
             <version>${project.version}</version>
         </dependency>

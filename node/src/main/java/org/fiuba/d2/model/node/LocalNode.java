@@ -37,4 +37,9 @@ public class LocalNode extends NodeImpl {
         Item one = repository.findOne(getHexString(sha1(key)));
         return nonNull(one) ? one.getValue() : null;
     }
+
+    @Override
+    public NodeInfo getInfo() {
+        return new NodeInfo(id, name, status, tokens);
+    }
 }

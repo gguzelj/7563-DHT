@@ -4,6 +4,10 @@ import java.util.List;
 
 public interface Node {
 
+    String getId();
+
+    String getName();
+
     NodeStatus getStatus();
 
     List<Token> getTokens();
@@ -12,4 +16,7 @@ public interface Node {
 
     String get(String key);
 
+    String getUri();
+
+    NodeInfo getInfo();
 }

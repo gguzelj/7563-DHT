@@ -1,5 +1,6 @@
 package org.fiuba.d2.model.node;
 
+import org.fiuba.d2.connector.Connector;
 import org.fiuba.d2.dto.Request;
 import org.fiuba.d2.dto.RequestType;
 import org.fiuba.d2.dto.Response;
@@ -16,28 +17,32 @@ import java.util.List;
 public class RemoteNode extends NodeImpl {
 
     @Transient
-    private RestTemplate restTemplate;
+    private Connector connector;
 
     private RemoteNode() {
     }
 
-    public RemoteNode(String name, String uri, NodeStatus status, List<Token> tokens, RestTemplate restTemplate) {
+    public RemoteNode(String name, String uri, NodeStatus status, List<Token> tokens, Connector connector) {
         super(name, uri, status, tokens);
-        this.restTemplate = restTemplate;
+        this.connector = connector;
     }
 
     @Override
     public void put(String key, String value) {
         Request request = new Request(RequestType.PUT, key, value);
-        String uri = "localhost:80801";
-        ResponseEntity<Response> response = restTemplate.postForEntity(uri, request, Response.class);
+        Response response = connector.put(request);
     }
 
     @Override
     public String get(String key) {
         Request request = new Request(RequestType.GET, key, null);
-        String uri = "localhost:80801";
-        ResponseEntity<Response> response = restTemplate.postForEntity(uri, request, Response.class);
-        return response.getBody().getValue();
+        /*ResponseEntity<Response> response = restTemplate.postForEntity(uri, request, Response.class);
+        return response.getBody().getValue();*/
+        return "";
+    }
+
+    @Override
+    public NodeInfo getInfo() {
+        return connector.getInfo();
     }
 }

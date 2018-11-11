@@ -1,6 +1,8 @@
 package org.fiuba.d2.model.node;
 
 import org.fiuba.d2.utils.HashGenerator;
+import org.fiuba.d2.utils.StringUtils;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigInteger;
@@ -11,20 +13,18 @@ import java.util.Random;
 public class Token implements Comparable<Token> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     private Integer id;
-
-    @Lob
-    private BigInteger value;
+    private String value;
 
     private Token() {
     }
 
-    public Token(BigInteger value) {
+    public Token(String value) {
         this.value = value;
     }
 
-    public BigInteger getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -51,29 +51,29 @@ public class Token implements Comparable<Token> {
         private static Random random = new Random();
 
         public static Token createRandom() {
-            return new Token(new BigInteger(1, HashGenerator.sha1(random.nextInt())));
+            return new Token(StringUtils.getHexString(HashGenerator.sha1(random.nextInt())));
         }
 
         public static Token createMinimum() {
             byte[] a = new byte[20];
             for (int i = 0; i < 20; i++)
                 a[i] = (byte)0x00;
-            return new Token(new BigInteger(1, a));
+            return new Token(StringUtils.getHexString(a));
         }
 
         public static Token createMaximum() {
             byte[] a = new byte[20];
             for (int i = 0; i < 20; i++)
                 a[i] = (byte)0xFF;
-            return new Token(new BigInteger(1, a));
+            return new Token(StringUtils.getHexString(a));
         }
 
         public static Token withValue(int integer) {
-            return new Token(BigInteger.valueOf(integer).abs());
+            return new Token(StringUtils.getHexString(BigInteger.valueOf(integer).abs().toByteArray()));
         }
 
         public static Token withValue(byte[] bytes) {
-            return new Token(new BigInteger(1, bytes));
+            return new Token(StringUtils.getHexString(bytes));
         }
 
     }

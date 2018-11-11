@@ -4,6 +4,7 @@ import org.fiuba.d2.model.node.Node;
 import org.fiuba.d2.model.node.NodeImpl;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 public class MembershipEvent implements Comparable<MembershipEvent> {
@@ -53,5 +54,21 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
     @Override
     public int compareTo(MembershipEvent o) {
         return timestamp.compareTo(o.getTimestamp());
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MembershipEvent that = (MembershipEvent) o;
+        return Objects.equals(timestamp, that.timestamp) &&
+                type == that.type &&
+                Objects.equals(node, that.node);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timestamp, type, node);
     }
 }
