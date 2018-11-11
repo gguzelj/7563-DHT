@@ -8,9 +8,6 @@ import org.fiuba.d2.persistence.ItemRepository;
 import org.springframework.web.client.RestTemplate;
 
 public class NodeBuilder {
-    public static LocalNode localNode(MembershipEvent event, ItemRepository itemRepository) {
-        return new LocalNode(event.getNodeId(), event.getName(), event.getUri(), event.getTokens(), itemRepository);
-    }
 
     public static RemoteNode remoteNode(MembershipEvent event, RestTemplate restTemplate) {
         Connector connector = new Connector(event.getUri(), restTemplate);
