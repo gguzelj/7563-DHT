@@ -16,4 +16,12 @@ public class Seed {
     public List<MembershipEvent> getEventsSince(Long timestamp) {
         return connector.getEventsSince(timestamp);
     }
+
+    public void sendEvent(MembershipEvent event) {
+        connector.sendEvent(event);
+    }
+
+    public List<MembershipEvent> getAllEvents() {
+        return connector.getAllEvents();
+    }
 }

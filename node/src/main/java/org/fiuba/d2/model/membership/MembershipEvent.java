@@ -73,6 +73,16 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
 
 
     @Override
+    public String toString() {
+        return "MembershipEvent{" +
+                "timestamp=" + timestamp +
+                ", type=" + type +
+                ", nodeId='" + nodeId + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

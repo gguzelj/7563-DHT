@@ -1,5 +1,7 @@
 package org.fiuba.d2.model.node;
 
+import org.fiuba.d2.model.membership.MembershipEvent;
+
 import java.util.List;
 
 public interface Node {
@@ -15,4 +17,5 @@ public interface Node {
     String get(String key);
 
     String getUri();
+
 }

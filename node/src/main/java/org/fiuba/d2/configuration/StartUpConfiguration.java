@@ -18,12 +18,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.fiuba.d2.model.membership.MembershipEventType.ADD;
@@ -42,8 +40,11 @@ public class StartUpConfiguration {
     @Value("${server.port}")
     private Integer port;
 
-    @Value("${dht.ring.seeds}")
+    @Value("${dht.ring.seeds:#{null}}")
     private List<String> seedsUris;
+
+    @Value("${dht.node.seed}")
+    private Boolean isSeed;
 
     private MembershipEventRepository membershipEventRepository;
 
@@ -65,26 +66,47 @@ public class StartUpConfiguration {
 
     @Bean
     public List<Seed> seeds() {
+        if (isNull(seedsUris))
+            return new ArrayList<>();
         return seedsUris.stream().map(uri -> new Seed(new Connector(uri, restTemplate))).collect(toList());
     }
 
     @Bean
     public Ring ring(List<Seed> seeds) {
         List<MembershipEvent> events = findEvents();
-        Ring ring = events.isEmpty() ? buildNewRing() : buildFromHistory(new LinkedBlockingQueue<>(events));
-        return ring;
+        return events.isEmpty() ? buildNewRing(seeds) : buildFromHistory(seeds, events);
     }
-
 
     private List<MembershipEvent> findEvents() {
         return membershipEventRepository.findAll().stream().sorted().collect(toList());
     }
 
-    private Ring buildNewRing() {
+    private Ring buildNewRing(List<Seed> seeds) {
         LocalNode node = createRandomNode();
+        MembershipEvent event = buildEvent(node);
         saveLocalNode(node);
-        saveMembershipEvent(node);
-        return new RingImpl(node);
+        saveMembershipEvent(event);
+        notifySeeds(seeds, event);
+        RingImpl ring = new RingImpl(node);
+        readAllEvents(seeds).stream()
+                .filter(e -> !e.getNodeId().equals(node.getId()))
+                .forEach(e -> {
+                    membershipEventRepository.saveAndFlush(e);
+                    ring.addNode(remoteNode(e, restTemplate), e.getTokens());
+                });
+        return ring;
+    }
+
+    private List<MembershipEvent> readAllEvents(List<Seed> seeds) {
+        return seeds.isEmpty() ? new ArrayList<>() : seeds.get(0).getAllEvents();
+    }
+
+    private List<MembershipEvent> readAllEventsSince(List<Seed> seeds, Long timestamp) {
+        return seeds.isEmpty() ? new ArrayList<>() : seeds.get(0).getEventsSince(timestamp);
+    }
+
+    private void notifySeeds(List<Seed> seeds, MembershipEvent event) {
+        seeds.forEach(seed -> seed.sendEvent(event));
     }
 
     private void saveLocalNode(LocalNode node) {
@@ -102,22 +124,27 @@ public class StartUpConfiguration {
         return new LocalNode(node.getNodeId(), node.getNodeName(), node.getUri(), tokens, itemRepository);
     }
 
-    private void saveMembershipEvent(LocalNode node) {
-        MembershipEvent event = new MembershipEvent(
-                currentTimeMillis(),
-                ADD,
-                node.getId(),
-                node.getName(),
-                node.getUri(),
-                node.getTokens());
+    private void saveMembershipEvent(MembershipEvent event) {
         membershipEventRepository.saveAndFlush(event);
     }
 
-    private Ring buildFromHistory(Queue<MembershipEvent> events) {
+    private MembershipEvent buildEvent(LocalNode node) {
+        return new MembershipEvent(currentTimeMillis(),ADD,node.getId(),node.getName(),node.getUri(),node.getTokens());
+    }
+
+    private Ring buildFromHistory(List<Seed> seeds, List<MembershipEvent> events) {
         LocalNode localNode = findLocalNode();
         Ring ring = new RingImpl(localNode);
         events.stream().filter(e -> !e.getNodeId().equals(localNode.getId()))
             .forEach(event -> ring.addNode(remoteNode(event, restTemplate), event.getTokens()));
+
+        MembershipEvent lastEvent = events.get(events.size() - 1);
+        List<MembershipEvent> membershipEvents = readAllEventsSince(seeds, lastEvent.getTimestamp());
+        membershipEvents.forEach(event -> {
+            membershipEventRepository.saveAndFlush(event);
+            ring.addNode(remoteNode(event, restTemplate), event.getTokens());
+        });
+
         return ring;
     }
 

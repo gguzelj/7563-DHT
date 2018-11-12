@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -21,7 +23,7 @@ public class EventController {
 
     @GetMapping("/events")
     private ResponseEntity<List<MembershipEvent>> getEvents(@RequestParam(required = false) Long timestamp) {
-        return ok(membershipEventService.getEventsSince(timestamp));
+        return ok(membershipEventService.getEventsSince(timestamp).stream().sorted().collect(toList()));
     }
 
     @PostMapping("/events")

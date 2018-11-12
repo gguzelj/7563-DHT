@@ -11,4 +11,6 @@ public interface MembershipEventRepository extends JpaRepository<MembershipEvent
 
     List<MembershipEvent> findByTimestampAfter(Long timestamp);
 
+    MembershipEvent findTopByOrderByTimestampDesc();
+
 }
