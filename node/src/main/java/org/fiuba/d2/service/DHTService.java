@@ -10,19 +10,19 @@ import static org.fiuba.d2.utils.HashGenerator.sha1;
 @Component
 public class DHTService {
 
-    private final Ring ring;
+    private final RingService ringService;
 
-    public DHTService(Ring ring) {
-        this.ring = ring;
+    public DHTService(RingService ringService) {
+        this.ringService = ringService;
     }
 
     public void put(String key, String value) {
-        Node coordinatorNode = ring.getCoordinatorNode(Token.TokenBuilder.withValue(sha1(key)));
+        Node coordinatorNode = ringService.getCoordinatorNode(Token.TokenBuilder.withValue(sha1(key)));
         coordinatorNode.put(key, value);
     }
 
     public String get(String key) {
-        Node coordinatorNode = ring.getCoordinatorNode(Token.TokenBuilder.withValue(sha1(key)));
+        Node coordinatorNode = ringService.getCoordinatorNode(Token.TokenBuilder.withValue(sha1(key)));
         return coordinatorNode.get(key);
     }
 

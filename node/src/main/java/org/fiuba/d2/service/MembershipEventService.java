@@ -19,12 +19,12 @@ public class MembershipEventService {
 
     private MembershipEventRepository repository;
     private RestTemplate restTemplate;
-    private Ring ring;
+    private RingService ringService;
 
-    public MembershipEventService(MembershipEventRepository repository, RestTemplate restTemplate, Ring ring) {
+    public MembershipEventService(MembershipEventRepository repository, RestTemplate restTemplate, RingService ringService) {
         this.repository = repository;
         this.restTemplate = restTemplate;
-        this.ring = ring;
+        this.ringService = ringService;
     }
 
     public List<MembershipEvent> getEventsSince(Long timestamp) {
@@ -34,7 +34,7 @@ public class MembershipEventService {
     public void addNewEvent(MembershipEvent event) {
         repository.saveAndFlush(event);
         Node node = createNode(event);
-        ring.addNode(node, node.getTokens());
+        ringService.addNode(node, node.getTokens());
     }
 
     private Node createNode(MembershipEvent event) {

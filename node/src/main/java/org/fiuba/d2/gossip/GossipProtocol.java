@@ -6,6 +6,7 @@ import org.fiuba.d2.model.membership.MembershipEventType;
 import org.fiuba.d2.model.node.Node;
 import org.fiuba.d2.model.ring.Ring;
 import org.fiuba.d2.persistence.MembershipEventRepository;
+import org.fiuba.d2.service.RingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,12 +24,12 @@ public class GossipProtocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(GossipProtocol.class);
 
-    private final Ring ring;
+    private final RingService ringService;
     private final MembershipEventRepository membershipEventRepository;
     private final RestTemplate restTemplate;
 
-    public GossipProtocol(Ring ring, MembershipEventRepository membershipEventRepository, RestTemplate restTemplate) {
-        this.ring = ring;
+    public GossipProtocol(RingService ringService, MembershipEventRepository membershipEventRepository, RestTemplate restTemplate) {
+        this.ringService = ringService;
         this.membershipEventRepository = membershipEventRepository;
         this.restTemplate = restTemplate;
     }
@@ -42,16 +43,16 @@ public class GossipProtocol {
             LOG.info("Updating ring with event {}", event);
             membershipEventRepository.saveAndFlush(event);
             if (event.getType().equals(MembershipEventType.ADD)) {
-                ring.addNode(remoteNode(event, restTemplate), event.getTokens());
+                ringService.addNode(remoteNode(event, restTemplate), event.getTokens());
             } else {
-                ring.removeNode(remoteNode(event, restTemplate));
+                ringService.removeNode(remoteNode(event, restTemplate));
             }
         });
 
     }
 
     private Connector findRandomConnector() {
-        List<Node> nodes = ring.getNodes();
+        List<Node> nodes = ringService.getNodes();
         Node node = nodes.get(new Random().nextInt(nodes.size()));
         return new Connector(node.getUri(), restTemplate);
     }

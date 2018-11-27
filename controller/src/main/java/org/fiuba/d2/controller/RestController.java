@@ -2,17 +2,11 @@ package org.fiuba.d2.controller;
 
 import org.fiuba.d2.dto.Request;
 import org.fiuba.d2.dto.Response;
-import org.fiuba.d2.model.membership.MembershipEvent;
-import org.fiuba.d2.model.node.NodeInfo;
 import org.fiuba.d2.service.DHTService;
-import org.fiuba.d2.service.MembershipEventService;
-import org.fiuba.d2.service.NodeInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static java.util.Objects.nonNull;
 import static org.fiuba.d2.dto.RequestType.GET;
