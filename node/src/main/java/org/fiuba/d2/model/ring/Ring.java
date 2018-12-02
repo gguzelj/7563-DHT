@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Ring {
 
-    void addNode(Node node, List<Token> tokens);
+    void addNode(Node node);
 
     void removeNode(Node node);
 

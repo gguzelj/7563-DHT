@@ -11,19 +11,20 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
 @Configuration
-public class StartUpConfiguration {
+public class SeedsConfiguration {
 
     @Value("${dht.ring.seeds:#{null}}")
-    private List<String> seedsUris;
+    private String seedsUris;
 
     private RestTemplate restTemplate;
 
-    public StartUpConfiguration(RestTemplate restTemplate) {
+    public SeedsConfiguration(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -31,7 +32,7 @@ public class StartUpConfiguration {
     public List<Seed> seeds() {
         if (isNull(seedsUris))
             return new ArrayList<>();
-        return seedsUris.stream().map(uri -> new Seed(new Connector(uri, restTemplate))).collect(toList());
+        return Stream.of(seedsUris.split(",")).map(uri -> new Seed(new Connector(uri, restTemplate))).collect(toList());
     }
 
 }

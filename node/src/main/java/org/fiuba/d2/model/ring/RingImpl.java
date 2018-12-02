@@ -22,8 +22,8 @@ public class RingImpl implements Ring {
     }
 
     @Override
-    public void addNode(Node node, List<Token> tokens) {
-         tokens.stream().sorted().forEach(token -> addNode(node, token));
+    public void addNode(Node node) {
+         node.getTokens().stream().sorted().forEach(token -> addNode(node, token));
     }
 
     @Override

@@ -22,9 +22,11 @@ public class RingTest {
         Node node2 = Mockito.mock(Node.class);
 
         when(node1.getTokens()).thenReturn(createTokens(1, 10));
+        when(node2.getTokens()).thenReturn(createTokens(5, 15));
+
 
         Ring ring =new RingImpl(node1);
-        ring.addNode(node2, createTokens(5, 15));
+        ring.addNode(node2);
 
         Assert.assertEquals(node2, ring.getCoordinatorNode(withValue(2)));
         Assert.assertEquals(node1, ring.getCoordinatorNode(withValue(7)));
@@ -42,10 +44,12 @@ public class RingTest {
         Node node3 = Mockito.mock(Node.class);
 
         when(node1.getTokens()).thenReturn(createTokens(10));
+        when(node2.getTokens()).thenReturn(createTokens(20));
+        when(node3.getTokens()).thenReturn(createTokens(30));
 
         Ring ring = new RingImpl(node1);
-        ring.addNode(node2, createTokens(20));
-        ring.addNode(node3, createTokens(30));
+        ring.addNode(node2);
+        ring.addNode(node3);
 
         ring.removeNode(node1);
         ring.removeNode(node2);
@@ -60,10 +64,12 @@ public class RingTest {
         Node node3 = Mockito.mock(Node.class);
 
         when(node1.getTokens()).thenReturn(createTokens(10));
+        when(node2.getTokens()).thenReturn(createTokens(20));
+        when(node3.getTokens()).thenReturn(createTokens(30));
 
         Ring ring = new RingImpl(node1);
-        ring.addNode(node2, createTokens(20));
-        ring.addNode(node3, createTokens(30));
+        ring.addNode(node2);
+        ring.addNode(node3);
 
         ring.removeNode(node2);
 
@@ -77,10 +83,12 @@ public class RingTest {
         Node node3 = Mockito.mock(Node.class);
 
         when(node1.getTokens()).thenReturn(createTokens(10));
+        when(node2.getTokens()).thenReturn(createTokens(20));
+        when(node3.getTokens()).thenReturn(createTokens(30));
 
         Ring ring = new RingImpl(node1);
-        ring.addNode(node2, createTokens(20));
-        ring.addNode(node3, createTokens(30));
+        ring.addNode(node2);
+        ring.addNode(node3);
 
         ring.removeNode(node1);
 

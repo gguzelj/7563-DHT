@@ -1,6 +1,7 @@
 package org.fiuba.d2.model.membership;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.fiuba.d2.model.node.Node;
 import org.fiuba.d2.model.node.Token;
 
 import javax.persistence.*;
@@ -27,6 +28,10 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
     private List<Token> tokens;
 
     private MembershipEvent() {
+    }
+
+    public MembershipEvent(Long timestamp, MembershipEventType type, Node node) {
+        this(timestamp, type, node.getId(), node.getName(), node.getUri(), node.getTokens());
     }
 
     public MembershipEvent(Long timestamp, MembershipEventType type, String nodeId, String name, String uri, List<Token> tokens) {
@@ -77,8 +82,8 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
         return "MembershipEvent{" +
                 "timestamp=" + timestamp +
                 ", type=" + type +
-                ", nodeId='" + nodeId + '\'' +
                 ", name='" + name + '\'' +
+                ", uri='" + uri + '\'' +
                 '}';
     }
 

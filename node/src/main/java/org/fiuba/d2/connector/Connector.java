@@ -2,23 +2,20 @@ package org.fiuba.d2.connector;
 
 import org.fiuba.d2.dto.Request;
 import org.fiuba.d2.dto.Response;
+import org.fiuba.d2.model.exception.UnreachableNodeException;
 import org.fiuba.d2.model.membership.MembershipEvent;
-import org.fiuba.d2.model.node.NodeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
 
 public class Connector {
 
@@ -56,15 +53,18 @@ public class Connector {
     }
 
     public List<MembershipEvent> getEventsSince(Long timestamp) {
-        ResponseEntity<List<MembershipEvent>> response = restTemplate.exchange(
-                uri + "/events?timestamp=" + timestamp.toString(),
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<MembershipEvent>>() {
-                });
-        return response.getStatusCode().is2xxSuccessful() ? response.getBody() : null;
+        try {
+            return restTemplate.exchange(
+                    uri + "/events?timestamp=" + timestamp.toString(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<MembershipEvent>>() {
+                    }).getBody();
+        } catch (RestClientException e) {
+            LOG.error("Error while connecting with {}", uri);
+            throw new UnreachableNodeException();
+        }
     }
-
 
     public void sendEvent(MembershipEvent event) {
         restTemplate.postForEntity(uri + "/events", event, String.class);
