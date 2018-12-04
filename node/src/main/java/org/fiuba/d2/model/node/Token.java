@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Random;
 
 @Embeddable
-public class Token implements Comparable<Token> {
+public class    Token implements Comparable<Token> {
 
     private String value;
 

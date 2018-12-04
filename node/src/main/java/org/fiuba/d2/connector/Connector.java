@@ -30,7 +30,7 @@ public class Connector {
     }
 
     public Response put(Request request) {
-        ResponseEntity<Response> response = restTemplate.postForEntity(uri, request, Response.class);
+            ResponseEntity<Response> response = restTemplate.postForEntity(uri, request, Response.class);
         return response.getStatusCode().is2xxSuccessful() ? response.getBody() : null;
     }
 

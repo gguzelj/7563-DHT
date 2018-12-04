@@ -5,6 +5,7 @@ import org.fiuba.d2.persistence.MembershipEventRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -23,10 +24,17 @@ public class EventService {
     }
 
     public void addNewEvent(MembershipEvent event) {
-        repository.saveAndFlush(event);
+        Optional<MembershipEvent> byTimestamp = repository.findByTimestamp(event.getTimestamp());
+        if (!byTimestamp.isPresent()) {
+            repository.saveAndFlush(event);
+        }
     }
 
     public List<MembershipEvent> findAll() {
         return repository.findAll().stream().sorted().collect(toList());
+    }
+
+    public MembershipEvent findLastEvent() {
+        return repository.findTopByOrderByTimestampDesc();
     }
 }

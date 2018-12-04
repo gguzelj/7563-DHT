@@ -30,8 +30,8 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
     private MembershipEvent() {
     }
 
-    public MembershipEvent(Long timestamp, MembershipEventType type, Node node) {
-        this(timestamp, type, node.getId(), node.getName(), node.getUri(), node.getTokens());
+    public MembershipEvent(MembershipEventType type, Node node) {
+        this(null, type, node.getId(), node.getName(), node.getUri(), node.getTokens());
     }
 
     public MembershipEvent(Long timestamp, MembershipEventType type, String nodeId, String name, String uri, List<Token> tokens) {
@@ -49,6 +49,10 @@ public class MembershipEvent implements Comparable<MembershipEvent> {
 
     public Long getTimestamp() {
         return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public MembershipEventType getType() {

@@ -13,6 +13,8 @@ public interface Ring {
 
     Node getCoordinatorNode(Token token);
 
+    Range getRange(Token token);
+
     List<Node> getNodes();
 
     Node getLocalNode();

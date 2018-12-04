@@ -1,12 +1,17 @@
 package org.fiuba.d2.service;
 
 import org.fiuba.d2.connector.Connector;
+import org.fiuba.d2.model.Item;
 import org.fiuba.d2.model.exception.UnreachableNodeException;
 import org.fiuba.d2.model.membership.MembershipEvent;
 import org.fiuba.d2.model.node.*;
+import org.fiuba.d2.model.ring.Range;
 import org.fiuba.d2.model.ring.Ring;
 import org.fiuba.d2.model.ring.RingImpl;
 import org.fiuba.d2.persistence.ItemRepository;
+import org.fiuba.d2.utils.RetriableTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,10 +20,6 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.System.currentTimeMillis;
-import static java.lang.System.exit;
-import static java.lang.Thread.setDefaultUncaughtExceptionHandler;
-import static java.lang.Thread.sleep;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -26,9 +27,12 @@ import static org.fiuba.d2.model.membership.MembershipEventType.ADD;
 import static org.fiuba.d2.model.node.Token.TokenBuilder.createRandom;
 import static org.fiuba.d2.utils.NameGenerator.generateRandomName;
 import static org.fiuba.d2.utils.NodeBuilder.remoteNode;
+import static org.fiuba.d2.utils.RetriableTask.*;
 
 @Service
 public class RingService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RingService.class);
 
     @Value("${dht.node.amount-tokens}")
     private Integer amountOfTokens;
@@ -64,25 +68,40 @@ public class RingService {
     }
 
     private Ring buildNewRing() {
-        List<MembershipEvent> events = readAllEventsSince(seeds, 0L);
-        events.forEach(eventService::addNewEvent);
         LocalNode localNode = createRandomNode();
-        MembershipEvent event = new MembershipEvent(currentTimeMillis(), ADD, localNode);
+        Ring ring = buildRing(localNode);
+        MembershipEvent event = new MembershipEvent(ADD, localNode);
         eventService.addNewEvent(event);
-        seeds.forEach(seed -> seed.sendEvent(event));
-        return buildRing(localNode, events);
+        runAsync(() -> seeds.forEach(seed -> submit(() -> seed.sendEvent(event))));
+        runAsync(() -> {
+            List<MembershipEvent> events = readAllEventsSince(seeds, 0L);
+            events.forEach(e -> {
+                eventService.addNewEvent(e);
+                updateRing(e);
+            });
+        });
+        return ring;
     }
 
     private Ring buildFromHistory(List<MembershipEvent> events) {
-        List<MembershipEvent> lostEvents = searchLostEvents(events);
-        lostEvents.forEach(eventService::addNewEvent);
-        events.addAll(lostEvents);
-        return buildRing(localNodeService.findLocalNode(), events);
+        Ring ring = buildRing(localNodeService.findLocalNode(), events);
+        runAsync(() -> {
+            List<MembershipEvent> lostEvents = searchLostEvents(events);
+            lostEvents.forEach(e -> {
+                eventService.addNewEvent(e);
+                updateRing(e);
+            });
+        });
+        return ring;
     }
 
     private List<MembershipEvent> searchLostEvents(List<MembershipEvent> knownEvents) {
         MembershipEvent lastEvent = knownEvents.get(knownEvents.size() - 1);
         return readAllEventsSince(seeds, lastEvent.getTimestamp());
+    }
+
+    private Ring buildRing(LocalNode localNode) {
+        return buildRing(localNode, new ArrayList<>());
     }
 
     private Ring buildRing(LocalNode localNode, List<MembershipEvent> events) {
@@ -113,14 +132,6 @@ public class RingService {
         return node;
     }
 
-    private void sleepOneSecond() {
-        try {
-            sleep(1000);
-        } catch (InterruptedException e1) {
-            exit(1);
-        }
-    }
-
     private String getUri() {
         return "http://" + localNodeAddress + ":" + port;
     }
@@ -130,7 +141,26 @@ public class RingService {
     }
 
     public void addNode(Node node) {
+        Node localNode = ring.getLocalNode();
+        List<Token> tokens = node.getTokens();
+        for (Token token : tokens) {
+            Range range = ring.getRange(token);
+            if (range.getNode().equals(localNode)) {
+                migrate(range.getFrom(), token, node);
+            }
+        }
         ring.addNode(node);
+    }
+
+    private void migrate(Token from, Token to, Node node) {
+        List<Item> items = itemRepository.findItemsByIdBetween(from.getValue(), to.getValue());
+        items.forEach(item -> {
+            LOG.info("Migrating keys to node to {}[{}]", node.getName(), node.getUri());
+            submit(() -> {
+                node.put(item .getKey(), item.getValue());
+                itemRepository.delete(item);
+            });
+        });
     }
 
     public void removeNode(Node node) {
@@ -143,7 +173,7 @@ public class RingService {
 
     //TODO consider REMOVE type event
     public void updateRing(MembershipEvent membershipEvent) {
-        ring.addNode(createNode(membershipEvent));
+        addNode(createNode(membershipEvent));
     }
 
     private Node createNode(MembershipEvent event) {

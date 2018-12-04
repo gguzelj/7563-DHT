@@ -27,13 +27,13 @@ public class RemoteNode extends NodeImpl {
 
     @Override
     public void put(String key, String value) {
-        LOG.info("Forwarding put request \"{}\" to {}[{}]", key, name, id);
+        LOG.info("Forwarding put request \"{}\" to {}[{}]", key, name, uri);
         connector.put(new Request(RequestType.PUT, key, value));
     }
 
     @Override
     public String get(String key) {
-        LOG.info("Forwarding get request \"{}\" to {}[{}]", key, name, id);
+        LOG.info("Forwarding get request \"{}\" to {}[{}]", key, name, uri);
         return connector.get(new Request(RequestType.GET, key, null)).getValue();
     }
 

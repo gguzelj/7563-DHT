@@ -55,6 +55,14 @@ public class RingImpl implements Ring {
     }
 
     @Override
+    public Range getRange(Token token) {
+        return ranges.stream()
+                .filter(range -> range.contains(token))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     public List<Node> getNodes() {
         return ranges.stream().map(Range::getNode).distinct().collect(toList());
     }
