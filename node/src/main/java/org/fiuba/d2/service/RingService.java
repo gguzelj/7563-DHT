@@ -84,7 +84,10 @@ public class RingService {
     }
 
     private Ring buildFromHistory(List<MembershipEvent> events) {
-        Ring ring = buildRing(localNodeService.findLocalNode(), events);
+        LocalNode localNode = localNodeService.findLocalNode();
+        List<MembershipEvent> filteredEvents= events.stream().filter(e -> !e.getNodeId().equals(localNode.getId()))
+                .collect(toList());
+        Ring ring = buildRing(localNode, filteredEvents);
         runAsync(() -> {
             List<MembershipEvent> lostEvents = searchLostEvents(events);
             lostEvents.forEach(e -> {
@@ -141,21 +144,17 @@ public class RingService {
     }
 
     public void addNode(Node node) {
-        Node localNode = ring.getLocalNode();
-        List<Token> tokens = node.getTokens();
-        for (Token token : tokens) {
-            Range range = ring.getRange(token);
-            if (range.getNode().equals(localNode)) {
-                migrate(range.getFrom(), token, node);
-            }
-        }
         ring.addNode(node);
+        List<Range> ranges = ring.getRanges(node);
+        for (Range range : ranges) {
+            migrate(range.getFrom(), range.getTo(), range.getNode());
+        }
     }
 
     private void migrate(Token from, Token to, Node node) {
         List<Item> items = itemRepository.findItemsByIdBetween(from.getValue(), to.getValue());
         items.forEach(item -> {
-            LOG.info("Migrating keys to node to {}[{}]", node.getName(), node.getUri());
+        LOG.info("Migrating keys to node to {}[{}]", node.getName(), node.getUri());
             submit(() -> {
                 node.put(item .getKey(), item.getValue());
                 itemRepository.delete(item);
