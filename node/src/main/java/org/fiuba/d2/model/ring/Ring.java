@@ -15,8 +15,12 @@ public interface Ring {
 
     List<Range> getRanges(Node node);
 
+    Range getRange(Token token);
+
     List<Node> getNodes();
 
     Node getLocalNode();
+
+    Node getNodeById(String id);
 
 }

@@ -43,6 +43,13 @@ public class    Token implements Comparable<Token> {
         return Objects.hash(value);
     }
 
+    @Override
+    public String toString() {
+        return "Token{" +
+                "value='" + value + '\'' +
+                '}';
+    }
+
     public static class TokenBuilder {
 
         private static Random random = new Random();

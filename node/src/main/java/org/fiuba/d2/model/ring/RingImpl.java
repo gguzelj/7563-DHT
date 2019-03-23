@@ -63,6 +63,14 @@ public class RingImpl implements Ring {
     }
 
     @Override
+    public Range getRange(Token token) {
+        return ranges.stream()
+                .filter(range -> range.contains(token))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     public List<Node> getNodes() {
         return ranges.stream().map(Range::getNode).distinct().collect(toList());
     }
@@ -70,6 +78,15 @@ public class RingImpl implements Ring {
     @Override
     public Node getLocalNode() {
         return localNode;
+    }
+
+    @Override
+    public Node getNodeById(String id) {
+        return ranges.stream()
+                .map(Range::getNode)
+                .filter(node -> node.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     private void initializeRing(Node node, List<Token> tokens) {

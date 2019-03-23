@@ -9,7 +9,6 @@ import org.fiuba.d2.model.ring.Range;
 import org.fiuba.d2.model.ring.Ring;
 import org.fiuba.d2.model.ring.RingImpl;
 import org.fiuba.d2.persistence.ItemRepository;
-import org.fiuba.d2.utils.RetriableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +17,15 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.fiuba.d2.model.membership.MembershipEventType.ADD;
+import static org.fiuba.d2.model.membership.MembershipEventType.REMOVE;
 import static org.fiuba.d2.model.node.Token.TokenBuilder.createRandom;
 import static org.fiuba.d2.utils.NameGenerator.generateRandomName;
 import static org.fiuba.d2.utils.NodeBuilder.remoteNode;
@@ -145,7 +147,7 @@ public class RingService {
 
     public void addNode(Node node) {
         ring.addNode(node);
-        List<Range> ranges = ring.getRanges(node);
+        Set<Range> ranges = new HashSet<>(ring.getRanges(node));
         for (Range range : ranges) {
             migrate(range.getFrom(), range.getTo(), range.getNode());
         }
@@ -153,31 +155,42 @@ public class RingService {
 
     private void migrate(Token from, Token to, Node node) {
         List<Item> items = itemRepository.findItemsByIdBetween(from.getValue(), to.getValue());
-        items.forEach(item -> {
-        LOG.info("Migrating keys to node to {}[{}]", node.getName(), node.getUri());
-            submit(() -> {
-                node.put(item .getKey(), item.getValue());
-                itemRepository.delete(item);
-            });
-        });
+        if (items.isEmpty())
+            return;
+        LOG.info("Migrating keys from {} to {} to node to {}[{}]", from, to, node.getName(), node.getUri());
+        items.forEach(item -> submit(() -> {
+            node.put(item .getKey(), item.getValue());
+            itemRepository.delete(item);
+        }));
     }
 
     public void removeNode(Node node) {
         ring.removeNode(node);
+        for (Token token : node.getTokens()) {
+            Range range = ring.getRange(token);
+            migrate(range.getFrom(), range.getTo(), range.getNode());
+        }
+    }
+
+    public void removeLocalNode() {
+        MembershipEvent event = new MembershipEvent(REMOVE, ring.getLocalNode());
+        runAsync(() -> seeds.forEach(seed -> submit(() -> seed.sendEvent(event))));
+        removeNode(ring.getLocalNode());
     }
 
     public Ring getRing() {
         return ring;
     }
 
-    //TODO consider REMOVE type event
     public void updateRing(MembershipEvent membershipEvent) {
-        addNode(createNode(membershipEvent));
+        if (membershipEvent.getType().equals(REMOVE))
+            removeNode(ring.getNodeById(membershipEvent.getNodeId()));
+        else
+            addNode(createNode(membershipEvent));
     }
 
     private Node createNode(MembershipEvent event) {
         Connector connector = new Connector(event.getUri(), restTemplate);
         return new RemoteNode(event.getNodeId(), event.getName(), event.getUri(), event.getTokens(), connector);
     }
-
 }
