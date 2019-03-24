@@ -1,5 +1,6 @@
 package org.fiuba.d2.model.node;
 
+import org.fiuba.d2.connector.Connector;
 import org.fiuba.d2.model.Item;
 import org.fiuba.d2.persistence.ItemRepository;
 
@@ -30,6 +31,11 @@ public class LocalNode extends NodeImpl {
     public String get(String key) {
         Item one = repository.findOne(getHexString(sha1(key)));
         return nonNull(one) ? one.getValue() : null;
+    }
+
+    @Override
+    public Connector getConnector() {
+        return null;
     }
 
 }

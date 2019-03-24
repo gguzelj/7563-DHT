@@ -16,11 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -65,8 +63,11 @@ public class RingService {
 
     @PostConstruct
     private void initializeRing(){
-        List<MembershipEvent> events = eventService.findAll();
-        this.ring = events.isEmpty() ? buildNewRing() : buildFromHistory(events);
+        runAsync(() ->{
+            sleepOneSecond();
+            List<MembershipEvent> events = eventService.findAll();
+            this.ring = events.isEmpty() ? buildNewRing() : buildFromHistory(events);
+        });
     }
 
     private Ring buildNewRing() {
@@ -158,23 +159,27 @@ public class RingService {
         if (items.isEmpty())
             return;
         LOG.info("Migrating keys from {} to {} to node to {}[{}]", from, to, node.getName(), node.getUri());
-        items.forEach(item -> submit(() -> {
+        items.forEach(item -> {
             node.put(item .getKey(), item.getValue());
             itemRepository.delete(item);
-        }));
+        });
     }
 
     public void removeNode(Node node) {
         ring.removeNode(node);
         for (Token token : node.getTokens()) {
             Range range = ring.getRange(token);
-            migrate(range.getFrom(), range.getTo(), range.getNode());
+            if (nonNull(range))
+                migrate(range.getFrom(), range.getTo(), range.getNode());
         }
     }
 
     public void removeLocalNode() {
         MembershipEvent event = new MembershipEvent(REMOVE, ring.getLocalNode());
-        runAsync(() -> seeds.forEach(seed -> submit(() -> seed.sendEvent(event))));
+        ring.getNodes().stream()
+            .map(Node::getConnector)
+            .filter(Objects::nonNull)
+            .forEach(connector -> connector.sendEvent(event));
         removeNode(ring.getLocalNode());
     }
 

@@ -31,6 +31,10 @@ public class RingImpl implements Ring {
         List<Range> ranges = this.ranges.stream()
                 .filter(range -> !range.getNode().equals(node))
                 .collect(toList());
+        if (ranges.isEmpty()) {
+            this.ranges = new ArrayList<>();
+            return;
+        }
         List<Range> newRing = new ArrayList<>();
         Token prev = createMinimum();
         Token next;

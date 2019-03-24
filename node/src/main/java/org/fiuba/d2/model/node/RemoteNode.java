@@ -37,4 +37,9 @@ public class RemoteNode extends NodeImpl {
         return connector.get(new Request(RequestType.GET, key, null)).getValue();
     }
 
+    @Override
+    public Connector getConnector() {
+        return connector;
+    }
+
 }
